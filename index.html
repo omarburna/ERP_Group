@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Job Application System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #667eea;
+        }
+
+        .page {
+            display: none;
+            padding: 2rem;
+            min-height: calc(100vh - 70px);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Home Page */
+        .hero {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+            padding: 6rem 2rem;
+            text-align: center;
+            color: white;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-info {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Features */
+        .features {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            margin: 1rem 0 0.5rem;
+            color: #333;
+        }
+
+        .feature-card p {
+            color: #666;
+        }
+
+        /* Job List */
+        .jobs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .job-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .job-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .job-header h2 {
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .job-description {
+            color: #666;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .job-details {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .job-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #555;
+        }
+
+        .job-requirements {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .job-requirements strong {
+            color: #333;
+        }
+
+        /* Forms */
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-container h1 {
+            color: #333;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .submit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Admin Dashboard */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-header h1 {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .dashboard-header p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-info h3 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .applications-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-header h2 {
+            color: #333;
+        }
+
+        .filter-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .application-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.3s;
+        }
+
+        .application-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .applicant-info h3 {
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .applicant-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .job-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-form h3 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Login */
+        .login-container {
+            max-width: 400px;
+            margin: 4rem auto;
+        }
+
+        .login-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            color: #333;
+            margin: 1rem 0 0.5rem;
+            font-size: 1.75rem;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .login-footer p {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: transform 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+        }
+
+        .no-jobs, .no-applications {
+            text-align: center;
+            color: white;
+            font-size: 1.25rem;
+            padding: 2rem;
+        }
+
+        .page-title {
+            color: white;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .footer-content h3 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .team-member {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+
+        .team-member:hover {
+            transform: translateY(-3px);
+        }
+
+        .team-member .name {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .team-member .id {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85rem;
+        }
+
+        .footer-note {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+                <span>HR Portal</span>
+            </div>
+            <div class="nav-links">
+                <a class="nav-link active" onclick="showPage('home')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    </svg>
+                    Home
+                </a>
+                <a class="nav-link" onclick="showPage('jobs')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                    Jobs
+                </a>
+                <a class="nav-link" onclick="showPage('admin')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    Admin
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <div id="home" class="page active">
+        <div class="hero">
+            <h1>Build Your Career With Us</h1>
+            <p>Join our team and grow your professional journey with exciting opportunities</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="showPage('jobs')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                    View Jobs
+                </button>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <svg class="icon" style="width: 40px; height: 40px; color: #667eea;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <h3>Easy Application</h3>
+                <p>Simple and quick application process</p>
+            </div>
+            <div class="feature-card">
+                <svg class="icon" style="width: 40px; height: 40px; color: #667eea;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <h3>Track Progress</h3>
+                <p>Monitor your application status in real-time</p>
+            </div>
+            <div class="feature-card">
+                <svg class="icon" style="width: 40px; height: 40px; color: #667eea;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <h3>Professional Growth</h3>
+                <p>Opportunities for career advancement</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Jobs Page -->
+    <div id="jobs" class="page">
+        <h1 class="page-title">Available Positions</h1>
+        <div class="container">
+            <div id="jobsList" class="jobs-grid"></div>
+        </div>
+    </div>
+
+    <!-- Apply Page -->
+    <div id="apply" class="page">
+        <div class="container">
+            <button class="back-btn" onclick="showPage('jobs')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Jobs
+            </button>
+            
+            <div class="form-container">
+                <h1 id="applyJobTitle">Apply for Position</h1>
+                <form id="applyForm" onsubmit="submitApplication(event)">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="applicantName" required placeholder="Enter your full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" id="applicantEmail" required placeholder="Enter your email">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="applicantPhone" required placeholder="Enter your phone number">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Resume/Experience *</label>
+                        <textarea id="applicantResume" required placeholder="Describe your experience and qualifications" rows="6"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cover Letter</label>
+                        <textarea id="applicantCoverLetter" placeholder="Tell us why you're interested in this position" rows="4"></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        Submit Application
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin" class="page">
+        <div class="dashboard-header">
+            <div>
+                <h1>HR Dashboard</h1>
+                <p>Manage job applications and hiring process</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="showPage('postJob')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Post Job
+                </button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <svg class="icon" style="color: #667eea;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <div class="stat-info">
+                        <h3 id="totalApps">0</h3>
+                        <p>Total Applications</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <svg class="icon" style="color: #28a745;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                    <div class="stat-info">
+                        <h3 id="totalJobs">0</h3>
+                        <p>Active Jobs</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <svg class="icon" style="color: #ffc107;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <div class="stat-info">
+                        <h3 id="shortlistedCount">0</h3>
+                        <p>Shortlisted</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <svg class="icon" style="color: #20c997;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <div class="stat-info">
+                        <h3 id="onboardedCount">0</h3>
+                        <p>Onboarded</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="applications-section">
+                <div class="section-header">
+                    <h2>Applications</h2>
+                    <div class="filter-controls">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <select id="statusFilter" class="filter-select" onchange="renderApplications()">
+                            <option value="all">All Status</option>
+                            <option value="received">Received</option>
+                            <option value="shortlisted">Shortlisted</option>
+                            <option value="interview_scheduled">Interview Scheduled</option>
+                            <option value="interview_passed">Interview Passed</option>
+                            <option value="offer_prepared">Offer Prepared</option>
+                            <option value="offer_issued">Offer Issued</option>
+                            <option value="onboarded">Onboarded</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="applicationsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Job Page -->
+    <div id="postJob" class="page">
+        <div class="container">
+            <button class="back-btn" onclick="showPage('admin')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Dashboard
+            </button>
+
+            <div class="form-container">
+                <h1>Post New Job</h1>
+                <form id="postJobForm" onsubmit="postJob(event)">
+                    <div class="form-group">
+                        <label>Job Title *</label>
+                        <input type="text" id="jobTitle" required placeholder="e.g., Senior Software Engineer">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Job Description *</label>
+                        <textarea id="jobDescription" required placeholder="Describe the role and responsibilities" rows="6"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Requirements *</label>
+                        <textarea id="jobRequirements" required placeholder="List the required qualifications and skills" rows="4"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Location *</label>
+                            <input type="text" id="jobLocation" required placeholder="Kumasi" value="Kumasi">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Salary *</label>
+                            <input type="text" id="jobSalary" required placeholder="e.g., GHS 5,000 - GHS 10,000">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Post Job
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <h3>Project Team</h3>
+            <div class="team-grid">
+                <div class="team-member">
+                    <p class="name">Sharifa Mustapha</p>
+                    <p class="id">UEB320422</p>
+                </div>
+                <div class="team-member">
+                    <p class="name">Sarfo Simon</p>
+                    <p class="id">UEB3204322</p>
+                </div>
+                <div class="team-member">
+                    <p class="name">Kumi Anthony</p>
+                    <p class="id">UEB3205222</p>
+                </div>
+                <div class="team-member">
+                    <p class="name">Emmanuel Osei</p>
+                    <p class="id">UEB3212922</p>
+                </div>
+                <div class="team-member">
+                    <p class="name">Awuah Johnson</p>
+                    <p class="id">UEB3200722</p>
+                </div>
+            </div>
+            <p class="footer-note">HR Job Application System - Enterprise Resource Planning Module</p>
+        </div>
+    </footer>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://huzipkhosiygjbzudcgx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1emlwa2hvc2l5Z2pienVkY2d4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3MjQ2ODksImV4cCI6MjEwMDMwMDY4OX0.HfLgXy3XlZf_tJFooplQtlhHOuiT2Fd4G0wB-TX7mrk';
+        
+        let supabase = null;
+        let jobs = [];
+        let applications = [];
+        let currentJobId = null;
+        let currentApplicationId = null;
+        let modalType = '';
+
+        // Initialize Supabase
+        function initSupabase() {
+            if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY_HERE') {
+                alert('Please configure your Supabase credentials in the HTML file');
+                return false;
+            }
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            return true;
+        }
+
+        // Fetch data from Supabase
+        async function fetchData() {
+            if (!supabase) return;
+            
+            try {
+                const [jobsRes, appsRes] = await Promise.all([
+                    supabase.from('jobs').select('*'),
+                    supabase.from('applications').select('*')
+                ]);
+                
+                if (jobsRes.error) throw jobsRes.error;
+                if (appsRes.error) throw appsRes.error;
+                
+                jobs = jobsRes.data || [];
+                applications = appsRes.data || [];
+                
+                // If no jobs exist, insert sample data
+                if (jobs.length === 0) {
+                    await insertSampleData();
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Insert sample data
+        async function insertSampleData() {
+            const sampleJobs = [
+                {
+                    title: 'Software Developer',
+                    description: 'We are looking for a skilled software developer to join our team. You will be responsible for developing and maintaining web applications.',
+                    requirements: '3+ years of experience in JavaScript, React, and Node.js. Strong problem-solving skills.',
+                    location: 'Kumasi',
+                    salary: 'GHS 5,000 - GHS 7,000'
+                },
+                {
+                    title: 'HR Manager',
+                    description: 'Lead our human resources department and manage recruitment, employee relations, and organizational development.',
+                    requirements: '5+ years of HR experience, strong leadership skills, knowledge of employment laws.',
+                    location: 'Kumasi',
+                    salary: 'GHS 6,000 - GHS 8,000'
+                }
+            ];
+
+            for (const job of sampleJobs) {
+                await supabase.from('jobs').insert(job);
+            }
+            
+            await fetchData();
+        }
+
+        // Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update nav link active state
+            const navLinks = document.querySelectorAll('.nav-link');
+            if (pageId === 'home') navLinks[0].classList.add('active');
+            if (pageId === 'jobs' || pageId === 'apply') navLinks[1].classList.add('active');
+            if (pageId === 'admin' || pageId === 'postJob') navLinks[2].classList.add('active');
+
+            // Render content based on page
+            if (pageId === 'jobs') renderJobs();
+            if (pageId === 'admin') renderDashboard();
+        }
+
+        // Render jobs list
+        function renderJobs() {
+            const container = document.getElementById('jobsList');
+            
+            if (jobs.length === 0) {
+                container.innerHTML = '<p class="no-jobs">No jobs available at the moment</p>';
+                return;
+            }
+
+            container.innerHTML = jobs.map(job => `
+                <div class="job-card">
+                    <div class="job-header">
+                        <svg class="icon" style="color: #667eea;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                        <h2>${job.title}</h2>
+                    </div>
+                    <p class="job-description">${job.description}</p>
+                    <div class="job-details">
+                        <div class="job-detail">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span>${job.location}</span>
+                        </div>
+                        <div class="job-detail">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                            <span>${job.salary}</span>
+                        </div>
+                    </div>
+                    <div class="job-requirements">
+                        <strong>Requirements:</strong>
+                        <p>${job.requirements}</p>
+                    </div>
+                    <button class="btn btn-info" onclick="applyForJob(${job.id})">
+                        Apply Now
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Apply for job
+        function applyForJob(jobId) {
+            currentJobId = jobId;
+            const job = jobs.find(j => j.id === jobId);
+            document.getElementById('applyJobTitle').textContent = `Apply for ${job.title}`;
+            document.getElementById('applyForm').reset();
+            showPage('apply');
+        }
+
+        // Submit application
+        async function submitApplication(event) {
+            event.preventDefault();
+            
+            if (!supabase) {
+                alert('Supabase not configured');
+                return;
+            }
+
+            const job = jobs.find(j => j.id === currentJobId);
+            const application = {
+                jobId: currentJobId,
+                jobTitle: job.title,
+                applicantName: document.getElementById('applicantName').value,
+                email: document.getElementById('applicantEmail').value,
+                phone: document.getElementById('applicantPhone').value,
+                resume: document.getElementById('applicantResume').value,
+                coverLetter: document.getElementById('applicantCoverLetter').value,
+                status: 'received',
+                interviewDate: null,
+                interviewNotes: '',
+                offerDetails: '',
+                onboardingDate: null,
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                const { error } = await supabase.from('applications').insert(application);
+                if (error) throw error;
+                
+                await fetchData();
+                alert('Application submitted successfully!');
+                showPage('jobs');
+            } catch (error) {
+                console.error('Error submitting application:', error);
+                alert('Error submitting application');
+            }
+        }
+
+        // Post new job
+        async function postJob(event) {
+            event.preventDefault();
+            
+            if (!supabase) {
+                alert('Supabase not configured');
+                return;
+            }
+
+            const newJob = {
+                title: document.getElementById('jobTitle').value,
+                description: document.getElementById('jobDescription').value,
+                requirements: document.getElementById('jobRequirements').value,
+                location: document.getElementById('jobLocation').value,
+                salary: document.getElementById('jobSalary').value
+            };
+
+            try {
+                const { error } = await supabase.from('jobs').insert(newJob);
+                if (error) throw error;
+                
+                await fetchData();
+                document.getElementById('postJobForm').reset();
+                alert('Job posted successfully!');
+                showPage('admin');
+            } catch (error) {
+                console.error('Error posting job:', error);
+                alert('Error posting job');
+            }
+        }
+
+        // Render dashboard
+        function renderDashboard() {
+            // Update stats
+            document.getElementById('totalApps').textContent = applications.length;
+            document.getElementById('totalJobs').textContent = jobs.length;
+            document.getElementById('shortlistedCount').textContent = applications.filter(a => a.status === 'shortlisted').length;
+            document.getElementById('onboardedCount').textContent = applications.filter(a => a.status === 'onboarded').length;
+
+            renderApplications();
+        }
+
+        // Get status color
+        function getStatusColor(status) {
+            const colors = {
+                received: '#6c757d',
+                shortlisted: '#17a2b8',
+                interview_scheduled: '#ffc107',
+                interview_passed: '#28a745',
+                offer_prepared: '#007bff',
+                offer_issued: '#6610f2',
+                onboarded: '#20c997',
+                rejected: '#dc3545'
+            };
+            return colors[status] || '#6c757d';
+        }
+
+        // Get status label
+        function getStatusLabel(status) {
+            const labels = {
+                received: 'Received',
+                shortlisted: 'Shortlisted',
+                interview_scheduled: 'Interview Scheduled',
+                interview_passed: 'Interview Passed',
+                offer_prepared: 'Offer Prepared',
+                offer_issued: 'Offer Issued',
+                onboarded: 'Onboarded',
+                rejected: 'Rejected'
+            };
+            return labels[status] || status;
+        }
+
+        // Render applications
+        function renderApplications() {
+            const filter = document.getElementById('statusFilter').value;
+            const filtered = filter === 'all' ? applications : applications.filter(a => a.status === filter);
+            const container = document.getElementById('applicationsList');
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<p class="no-applications">No applications found</p>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(app => `
+                <div class="application-card">
+                    <div class="card-header">
+                        <div class="applicant-info">
+                            <h3>${app.applicantName}</h3>
+                            <p>${app.email}</p>
+                        </div>
+                        <span class="status-badge" style="background-color: ${getStatusColor(app.status)}">
+                            ${getStatusLabel(app.status)}
+                        </span>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="job-info">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                            </svg>
+                            <span>${app.jobTitle}</span>
+                        </div>
+                        <div class="contact-info">
+                            <p>Phone: ${app.phone}</p>
+                        </div>
+                    </div>
+
+                    <div class="card-actions">
+                        ${getActionButtons(app)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Get action buttons based on status
+        function getActionButtons(app) {
+            switch (app.status) {
+                case 'received':
+                    return `
+                        <button class="action-btn btn-success" onclick="updateStatus(${app.id}, 'shortlisted')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            Shortlist
+                        </button>
+                        <button class="action-btn btn-danger" onclick="updateStatus(${app.id}, 'rejected')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                            </svg>
+                            Reject
+                        </button>
+                    `;
+                case 'shortlisted':
+                    return `
+                        <button class="action-btn btn-info" onclick="openModal(${app.id}, 'interview')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Schedule Interview
+                        </button>
+                    `;
+                case 'interview_scheduled':
+                    return `
+                        <button class="action-btn btn-success" onclick="updateStatus(${app.id}, 'interview_passed')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            Pass Interview
+                        </button>
+                        <button class="action-btn btn-danger" onclick="updateStatus(${app.id}, 'rejected')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                            </svg>
+                            Reject
+                        </button>
+                    `;
+                case 'interview_passed':
+                    return `
+                        <button class="action-btn btn-info" onclick="openModal(${app.id}, 'offer')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            Prepare Offer
+                        </button>
+                    `;
+                case 'offer_prepared':
+                    return `
+                        <button class="action-btn btn-success" onclick="openModal(${app.id}, 'issue')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                            Issue Offer
+                        </button>
+                    `;
+                case 'offer_issued':
+                    return `
+                        <button class="action-btn btn-info" onclick="openModal(${app.id}, 'onboard')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            Onboard
+                        </button>
+                    `;
+                case 'onboarded':
+                    return `
+                        <span style="display: flex; align-items: center; gap: 0.5rem; color: #28a745; font-weight: 600;">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            Process Complete
+                        </span>
+                    `;
+                case 'rejected':
+                    return `
+                        <span style="display: flex; align-items: center; gap: 0.5rem; color: #dc3545; font-weight: 600;">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                            </svg>
+                            Rejected
+                        </span>
+                    `;
+                default:
+                    return '';
+            }
+        }
+
+        // Update application status
+        async function updateStatus(appId, status, additionalData = {}) {
+            if (!supabase) {
+                alert('Supabase not configured');
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('applications')
+                    .update({ status, ...additionalData })
+                    .eq('id', appId);
+                
+                if (error) throw error;
+                
+                await fetchData();
+                renderDashboard();
+                alert(`Application ${status === 'rejected' ? 'rejected' : 'updated'} successfully!`);
+            } catch (error) {
+                console.error('Error updating application:', error);
+                alert('Error updating application');
+            }
+        }
+
+        // Open modal
+        function openModal(appId, type) {
+            currentApplicationId = appId;
+            modalType = type;
+            const app = applications.find(a => a.id === appId);
+            
+            let content = '';
+            
+            switch (type) {
+                case 'interview':
+                    content = `
+                        <div class="modal-form">
+                            <h3>Schedule Interview</h3>
+                            <div class="form-group">
+                                <label>Interview Date & Time</label>
+                                <input type="datetime-local" id="interviewDate">
+                            </div>
+                            <div class="form-group">
+                                <label>Interview Notes</label>
+                                <textarea id="interviewNotes" rows="4" placeholder="Add interview notes..."></textarea>
+                            </div>
+                            <div class="modal-actions">
+                                <button class="btn btn-success" onclick="scheduleInterview()">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                    Schedule & Pass
+                                </button>
+                                <button class="btn btn-danger" onclick="updateStatus(${appId}, 'rejected'); closeModal();">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                                    </svg>
+                                    Reject
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'offer':
+                    content = `
+                        <div class="modal-form">
+                            <h3>Prepare Offer</h3>
+                            <div class="form-group">
+                                <label>Offer Details</label>
+                                <textarea id="offerDetails" rows="4" placeholder="Enter offer details (salary, benefits, start date, etc.)"></textarea>
+                            </div>
+                            <div class="modal-actions">
+                                <button class="btn btn-info" onclick="prepareOffer()">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                    </svg>
+                                    Prepare Offer
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'issue':
+                    content = `
+                        <div class="modal-form">
+                            <h3>Issue Offer</h3>
+                            <p>Are you sure you want to issue the offer to ${app.applicantName}?</p>
+                            <div class="modal-actions">
+                                <button class="btn btn-success" onclick="issueOffer()">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                    </svg>
+                                    Issue Offer
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'onboard':
+                    content = `
+                        <div class="modal-form">
+                            <h3>Onboard Candidate</h3>
+                            <div class="form-group">
+                                <label>Onboarding Date</label>
+                                <input type="date" id="onboardingDate">
+                            </div>
+                            <div class="modal-actions">
+                                <button class="btn btn-success" onclick="onboardCandidate()">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                    </svg>
+                                    Complete Onboarding
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            currentApplicationId = null;
+            modalType = '';
+        }
+
+        // Schedule interview
+        function scheduleInterview() {
+            const date = document.getElementById('interviewDate').value;
+            const notes = document.getElementById('interviewNotes').value;
+            updateStatus(currentApplicationId, 'interview_scheduled', {
+                interviewDate: date,
+                interviewNotes: notes
+            });
+            closeModal();
+        }
+
+        // Prepare offer
+        function prepareOffer() {
+            const details = document.getElementById('offerDetails').value;
+            updateStatus(currentApplicationId, 'offer_prepared', {
+                offerDetails: details
+            });
+            closeModal();
+        }
+
+        // Issue offer
+        function issueOffer() {
+            updateStatus(currentApplicationId, 'offer_issued');
+            closeModal();
+        }
+
+        // Onboard candidate
+        function onboardCandidate() {
+            const date = document.getElementById('onboardingDate').value;
+            updateStatus(currentApplicationId, 'onboarded', {
+                onboardingDate: date
+            });
+            closeModal();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (initSupabase()) {
+                await fetchData();
+            }
+            showPage('home');
+        });
+    </script>
+</body>
+</html>
